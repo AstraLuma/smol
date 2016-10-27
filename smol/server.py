@@ -1,6 +1,7 @@
 from aiohttp import web
 import pkg_resources
 import pathlib
+import mimetypes
 import aiohttp_jinja2
 
 
@@ -20,7 +21,7 @@ async def static(request):
         stream = open(str(p), 'rb')
     # TODO: streaming
     body = stream.read()
-    return web.Response(body=body)
+    return web.Response(body=body, content_type=mimetypes.guess_type(fn)[0])
 
 def setup_routes(app):
     app.router.add_get('/static/{filename}', static)
