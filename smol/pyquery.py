@@ -28,6 +28,11 @@ class PyQueryApp:
     def setup_routes(cls, app):
         app.router.add_get('/pyq', cls._handler)
 
+    async def on_load(self):
+        """
+        Override this to do things on page load
+        """
+
     @classmethod
     async def _handler(cls, request):
 

@@ -3,7 +3,7 @@
 
     // FIXME: Handle disconnects (mostly theoretical)
     connection.onopen = function () {
-        connection.send(JSON.stringify({'type': 'begin'}));
+        connection.send(JSON.stringify({'type': 'load'}));
     };
 
     connection.onerror = function (error) {
