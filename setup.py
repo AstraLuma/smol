@@ -20,5 +20,10 @@ setup(
         'cchardet',
         'aiodns',
     ],
+    entry_points={
+        'gui_scripts': [
+            'smol = smol.__main__:main'
+        ]
+    },
     # zip_safe=False,
 )
