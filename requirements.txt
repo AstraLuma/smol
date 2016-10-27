@@ -1,0 +1,7 @@
+pywebview
+aiohttp
+pyyaml
+
+# Bonuses to aiohttp
+cchardet
+aiodns
