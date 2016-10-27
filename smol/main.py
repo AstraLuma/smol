@@ -8,18 +8,18 @@ from .server import setup_routes
 import aiohttp_jinja2
 import jinja2
 
-PROJ_ROOT = pathlib.Path(__file__).parent
-
+from .pyquery import PyQueryApp
 
 async def init(loop):
     # setup application and extensions
     app = web.Application(loop=loop, debug=True)
+    qapp = PyQueryApp()
 
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('smol', 'templates'))
     # setup views and routes
-    setup_routes(app, PROJ_ROOT)
-    #setup_middlewares(app)
+    setup_routes(app)
+    qapp.setup_routes(app)
 
     return app
 

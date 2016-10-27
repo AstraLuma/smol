@@ -22,6 +22,6 @@ async def static(request):
     body = stream.read()
     return web.Response(body=body)
 
-def setup_routes(app, project_root):
+def setup_routes(app):
     app.router.add_get('/static/{filename}', static)
     app.router.add_get('/', index)
