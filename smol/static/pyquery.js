@@ -3,9 +3,7 @@
 
     // FIXME: Handle disconnects (mostly theoretical)
     connection.onopen = function () {
-        $(function() {
-            connection.send(JSON.stringify({'type': 'load'}));
-        });
+        connection.send(JSON.stringify({'type': 'load'}));
     };
 
     connection.onerror = function (error) {
