@@ -8,12 +8,16 @@
     <title>SMoL</title>
 
     <!-- Bootstrap -->
-    <link href="/static/bootstrap.css" rel="stylesheet">
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
     <link href="/static/bootstrap-theme.min.css" rel="stylesheet">
     <style>
       body {
         /* For the navbar */
         padding-top: 50px;
+      }
+
+      #packlist, #packdetails {
+        height: 100%;
       }
     </style>
   </head>
@@ -27,30 +31,42 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">SMoL</a>
+          <a class="navbar-brand">SMoL</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#packs">Packs</a></li>
-            <li><a href="#options">Options</a></li>
-            <li><a href="#about">About</a></li>
+            <li><a href="#packs" aria-controls="home" role="tab" data-toggle="tab">Packs</a></li>
+            <li><a href="#options" aria-controls="home" role="tab" data-toggle="tab">Options</a></li>
+            <li><a href="#about" aria-controls="home" role="tab" data-toggle="tab">About</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
 
-    <div class="container" id="packs">
+    <div class="tab-content">
+      <section role="tabpanel" class="tab-pane active" id="packs">
 
-      <h1>Hello, minecraft!</h1>
-      <img src="/static/pig.jpg">
+        <div id="packlist" class="col-xs-4">
+          (Packlist Here)
+        </div>
 
-    </div>
+        <div id="packdetails" class="col-xs-8">
+          (Pack Details here)
+        </div>
 
-    <div class="container" id="about">
+      </section>
 
-      <h1>Hello, minecraft!</h1>
-      <img src="/static/pig.jpg">
+      <section role="tabpanel" class="tab-pane active" id="options">
+        (Launcher Options)
+      </section>
 
+      <section role="tabpanel" class="tab-pane active" id="about">
+
+        <p>The Smol MOdpack Launcher</p>
+
+        <img src="/static/pig.jpg">
+
+      </section>
     </div>
 
     <script src="/static/jquery.min.js"></script>

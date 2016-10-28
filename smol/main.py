@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 import asyncio
 import logging
-import pathlib
 from aiohttp import web
 from .webview import WebviewThread
 from .server import setup_routes
 import aiohttp_jinja2
 import jinja2
 
-from .pyquery import PyQueryApp
+from .app import SmolApp
 
 async def init(loop):
     # setup application and extensions
     app = web.Application(loop=loop, debug=True)
-    qapp = PyQueryApp()
+    qapp = SmolApp()
 
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('smol', 'templates'))
@@ -30,7 +29,7 @@ def main():
 
     loop = asyncio.get_event_loop()
     app = loop.run_until_complete(init(loop))
-    wv = WebviewThread('Test', 'http://localhost:9753/')
+    wv = WebviewThread('SMoL', 'http://localhost:9753/')
     @wv.onclose
     def exit():
         loop.stop()
