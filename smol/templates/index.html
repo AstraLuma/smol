@@ -11,13 +11,44 @@
     <link href="/static/bootstrap.min.css" rel="stylesheet">
     <link href="/static/bootstrap-theme.min.css" rel="stylesheet">
     <style>
-      body {
+      section {
         /* For the navbar */
         padding-top: 50px;
       }
 
       #packlist, #packdetails {
-        height: 100%;
+        overflow-y: scroll;
+        position: absolute;
+        top: 50px;
+        bottom: 0;
+      }
+
+      #packlist {
+        left: 0;
+        right: 67%;
+      }
+
+      #packdetails {
+        left: 33%;
+        right: 0;
+        padding: 1em;
+      }
+
+      #packlist {
+        background: green;
+      }
+
+      /* Also used in #packdetails */
+      .pack img, .pack header {
+        display: inline-block;
+      }
+
+      #packlist .pack.selected {
+        background: SaddleBrown;
+      }
+
+      #packdetails {
+        background: grey;
       }
     </style>
   </head>
@@ -46,12 +77,46 @@
     <div class="tab-content">
       <section role="tabpanel" class="tab-pane active" id="packs">
 
-        <div id="packlist" class="col-xs-4">
-          (Packlist Here)
+        <div id="packlist">
+          <div class="pack selected">
+            <img src="https://hydra-media.cursecdn.com/minecraft.gamepedia.com/f/f8/Zombie_Head.png">
+            <header>
+              <h3>ZombiePack</h3>
+              <p>Tinkering &amp; Tech</p>
+            </header>
+          </div>
+          <div class=pack>
+            <img src="https://hydra-media.cursecdn.com/minecraft.gamepedia.com/9/9c/Skeleton_Skull.png">
+            <header>
+              <h3>SkeletonPack</h3>
+              <p>All Quests Start at the Tavern</p>
+            </header>
+          </div>
+          <div class=pack>
+            <img src="https://hydra-media.cursecdn.com/minecraft.gamepedia.com/9/97/Creeper_Head.png">
+            <header>
+              <h3>CreeperPack</h3>
+              <p>Watch the World Burn</p>
+            </header>
+          </div>
         </div>
 
-        <div id="packdetails" class="col-xs-8">
-          (Pack Details here)
+        <div id="packdetails">
+          <div class=pack>
+            <img src="https://hydra-media.cursecdn.com/minecraft.gamepedia.com/f/f8/Zombie_Head.png">
+            <header>
+              <h1>ZombiePack</h1>
+              <p>Tinkering &amp; Tech</p>
+            </header>
+          </div>
+          <div class="btn-toolbar" role="toolbar" aria-label="...">
+            <div class="btn-group" role="group">Status: Installed</div>
+            <div class="btn-group pull-right" role="group" aria-label="..."><button type="button" class="btn btn-default">Launch</button></div>
+          </div>
+
+          <p>Etiam scelerisque, lacus at fringilla pellentesque, odio ipsum faucibus ipsum, vel pharetra magna nibh non lorem. Aliquam erat volutpat. Fusce a pulvinar sapien. Vivamus nisl quam, tincidunt at mauris et, placerat congue purus. Nam ultrices lectus sit amet lectus blandit, sed maximus tortor faucibus. Proin fringilla at sem faucibus mattis. Etiam leo sapien, tincidunt sed pellentesque nec, consequat eget lectus. Nulla facilisi. Quisque viverra ante ac consectetur sollicitudin.</p>
+
+          <p>Duis ut eleifend nisl. Suspendisse potenti. Sed in pretium ligula, et suscipit urna. Nullam mi eros, mattis vel dapibus et, mattis nec augue. In convallis eros turpis, ac volutpat purus varius eu. Etiam ante mauris, varius quis orci ac, accumsan semper magna. Curabitur eu dictum orci. Etiam non tellus vitae metus venenatis mattis. Duis finibus mattis tristique. Pellentesque aliquet sagittis mi id dapibus. Duis scelerisque nisi vitae gravida finibus.</p>
         </div>
 
       </section>

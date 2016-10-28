@@ -58,24 +58,30 @@ class PyQuery:
                 'type': 'call',
                 'query': self.query,
                 'method': name,
-                'args': args,  # TODO: Map non-JSONable types
+                'args': self.app._args2json(args),
             })
             assert resp['type'] == 'return'
             # TODO: Map elements, etc to objects
-            return resp['value']
+            return self.app._json2args(resp['value'])
         return methodproxy
 
 class PyQueryApp:
     def __init__(self):
         self.theline = queue.Queue()
 
-    def setup_routes(self, app):
-        app.router.add_get('/pyq', self._handler)
+    def __call__(self, query):
+        """
+        "Executes" a query, returning a proxy object.
+        """
+        return PyQuery(query, self)
 
     async def on_load(self):
         """
         Override this to do things on page load
         """
+
+    def setup_routes(self, app):
+        app.router.add_get('/pyq', self._handler)
 
     async def _handler(self, request):
 
@@ -100,6 +106,9 @@ class PyQueryApp:
             # Don't actually care about the results.
             # FIXME: At least log if there's an error 
             return
+        elif obj['type'] == 'callback':
+            ...
+            return
         fut = self.theline.get(False)
         if obj['type'] == 'error':
             err = None
@@ -119,8 +128,10 @@ class PyQueryApp:
         self.theline.put(f)
         return await f
 
-    def __call__(self, query):
-        """
-        "Executes" a query, returning a proxy object.
-        """
-        return PyQuery(query, self)
+    def _args2json(self, args):
+        # TODO: Map non-JSONable types
+        return args
+
+    def _json2args(self, args):
+        # TODO: Map non-JSONable types
+        return args
