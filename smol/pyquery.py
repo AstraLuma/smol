@@ -60,6 +60,9 @@ class PyQuery:
                 'method': name,
                 'args': args,  # TODO: Map non-JSONable types
             })
+            assert resp['type'] == 'return'
+            # TODO: Map elements, etc to objects
+            return resp['value']
         return methodproxy
 
 class PyQueryApp:
