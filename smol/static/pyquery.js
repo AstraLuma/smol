@@ -3,7 +3,9 @@
 
     // FIXME: Handle disconnects (mostly theoretical)
     connection.onopen = function () {
-        connection.send(JSON.stringify({'type': 'load'}));
+        $(function() {
+            connection.send(JSON.stringify({'type': 'load'}));
+        });
     };
 
     connection.onerror = function (error) {
@@ -22,7 +24,8 @@
 
     function obj2json(obj) {
         // FIXME: Map Element, etc to JSONable types
-        //return obj
+        //return obj;
+        return null;
     }
 
     function args2obj(args) {
@@ -36,7 +39,7 @@
         if (body.type == 'call') {
             var jq = getJQ(body.query);
 
-            console.log("Result size " + jq.length);
+            console.log("Results: " + jq.length + " " + jq);
 
             var meth = jq[body.method];
             if (meth == undefined) {
