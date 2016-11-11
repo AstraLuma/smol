@@ -3,22 +3,20 @@ import asyncio
 import logging
 from aiohttp import web
 from .webview import WebviewThread
-from .server import setup_routes
+from .pyquery import setup_routes
 import aiohttp_jinja2
 import jinja2
 
-from .app import SmolApp
+import smol.app  # noqa
 
 async def init(loop):
     # setup application and extensions
     app = web.Application(loop=loop, debug=True)
-    qapp = SmolApp()
 
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('smol', 'templates'))
     # setup views and routes
-    setup_routes(app)
-    qapp.setup_routes(app)
+    setup_routes('smol.app', app)
 
     return app
 

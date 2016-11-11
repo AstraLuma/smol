@@ -1,13 +1,14 @@
 """
 Exposes jQuery over websocket. Is generally pretty lazy and very async
 """
+import inspect
 import asyncio
 import aiohttp
 from aiohttp import web
 import json
 import queue
 
-__all__ = 'JSError', 'errors', 'PyQueryApp'
+__all__ = 'JSError', 'errors', 'PyQueryApp', 'route', 'setup_routes'
 
 class JSError(Exception):
     """
@@ -65,7 +66,7 @@ class PyQuery:
             return self.app._json2args(resp['value'])
         return methodproxy
 
-class PyQueryApp:
+class PyQueryRoute:
     def __init__(self):
         self.theline = queue.Queue()
 
@@ -80,8 +81,10 @@ class PyQueryApp:
         Override this to do things on page load
         """
 
-    def setup_routes(self, app):
-        app.router.add_get('/pyq', self._handler)
+    @classmethod
+    def __handle__(cls, request):
+        self = cls()
+        return self._handler(request)
 
     async def _handler(self, request):
 
@@ -135,3 +138,31 @@ class PyQueryApp:
     def _json2args(self, args):
         # TODO: Map non-JSONable types
         return args
+
+class _RouteRegistry:
+    def __init__(self):
+        self._calls = {}
+    def _reg(self, method, path):
+        modname = inspect.stack()[2].frame.f_globals['__name__']
+        calls = self._calls.setdefault(modname, [])
+        def _(func):
+            if hasattr(func, '__handle__'):
+                calls.append((method, (path, func.__handle__), {}))
+            else:
+                calls.append((method, (path, func), {}))
+            return func
+        return _
+
+    def setup_routes(self, mod, app):
+        for meth, pargs, kwargs in self._calls[mod]:
+            getattr(app.router, meth)(*pargs, **kwargs)
+
+    def __call__(self, path):
+        return self._reg('add', path)
+
+    def GET(self, path):
+        return self._reg('add_get', path)
+
+
+route = _RouteRegistry()
+setup_routes = route.setup_routes
