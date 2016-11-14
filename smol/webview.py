@@ -35,6 +35,13 @@ class WebviewThread(threading.Thread):
         self._loop = loop
 
     def onclose(self, handler):
+        """
+        Register a function to be called when the window closes. May be used as a decorator.
+        
+        Only one function is registered at a time. New registrations overwrite the old one.
+
+        The registered function is called through `call_soon_threadsafe` of the loop when the object was instantiated.
+        """
         self._onclose = handler
 
     def run(self):
@@ -77,6 +84,8 @@ class WebviewThread(threading.Thread):
         :param save_filename: Default filename for save file dialog.
         :return:
         """
+        # XXX: Is this cross-loop compatible? I suspect not.
+        # XXX: Is this reentrant? How does webview handle that?
         return await self._loop.call_soon_threadsafe(
             self._loop.run_in_executor, 
             None, webview.create_file_dialog, dialog_type, directory, allow_multiple, save_filename
