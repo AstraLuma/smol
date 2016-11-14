@@ -7,7 +7,7 @@ from .pyquery import setup_routes
 import aiohttp_jinja2
 import jinja2
 
-import smol.app  # noqa
+import smol.app
 
 async def init(loop):
     # setup application and extensions
@@ -16,7 +16,7 @@ async def init(loop):
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('smol', 'templates'))
     # setup views and routes
-    setup_routes('smol.app', app)
+    setup_routes(smol.app, app)
 
     return app
 

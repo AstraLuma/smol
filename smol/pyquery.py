@@ -142,26 +142,51 @@ class PyQueryRoute:
 class _RouteRegistry:
     def __init__(self):
         self._calls = {}
-    def _reg(self, method, path):
+
+    # See https://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.UrlDispatcher.add_route
+    def _reg(self, method, path, **kwargs):
         modname = inspect.stack()[2].frame.f_globals['__name__']
         calls = self._calls.setdefault(modname, [])
         def _(func):
             if hasattr(func, '__handle__'):
-                calls.append((method, (path, func.__handle__), {}))
+                calls.append(
+                    ((method, path, func.__handle__), kwargs)
+                )
             else:
-                calls.append((method, (path, func), {}))
+                calls.append(
+                    ((method, path, func), kwargs)
+                )
             return func
         return _
 
     def setup_routes(self, mod, app):
-        for meth, pargs, kwargs in self._calls[mod]:
-            getattr(app.router, meth)(*pargs, **kwargs)
+        if hasattr(mod, '__name__'):
+            mod = mod.__name__
+        for pargs, kwargs in self._calls[mod]:
+            app.router.add_route(*pargs, **kwargs)
 
-    def __call__(self, path):
-        return self._reg('add', path)
+    def __call__(self, path, **kwargs):
+        return self._reg('*', path, **kwargs)
 
-    def GET(self, path):
-        return self._reg('add_get', path)
+    def GET(self, path, **kwargs):
+        return self._reg('GET', path, **kwargs)
+
+    def POST(self, path, **kwargs):
+        return self._reg('POST', path, **kwargs)
+
+    def PUT(self, path, **kwargs):
+        return self._reg('POST', path, **kwargs)
+
+    def DELETE(self, path, **kwargs):
+        return self._reg('POST', path, **kwargs)
+
+    def PATCH(self, path, **kwargs):
+        return self._reg('POST', path, **kwargs)
+
+    # Omitting HEAD
+
+    def OPTIONS(self, path, **kwargs):
+        return self._reg('POST', path, **kwargs)
 
 
 route = _RouteRegistry()
