@@ -9,6 +9,13 @@ import jinja2
 
 import smol.app
 
+try:
+    import uvloop
+except ImportError:
+    pass
+else:
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
 async def init(loop):
     # setup application and extensions
     app = web.Application(loop=loop, debug=True)
