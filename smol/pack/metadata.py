@@ -26,14 +26,16 @@ The pack metadata service. Stores metadata and handles querying for updates.
 # The metadata comes from the source. Metadata pass the Pack object a factory for the data stream and the metadata.
 # The Pack is concerned with how to install and start. The metadata deals with updates and such.
 
-import abc.collections
+import collections.abc
+import abc
+import logging
+import asyncio
 import aiofiles
 import yaml
-import logging
-import abc
+import yurl
 
 
-class Service(abc.collections.Mapping):
+class Service(collections.abc.Mapping):
     def __init__(self):
         self._data = {}
 
@@ -46,8 +48,7 @@ class Service(abc.collections.Mapping):
 
         for pdata in yaml.safe_load_all(data):
             try:
-                pd = DATA_TYPES[pdata](**pdata)
-                self._data[pd.uri, pd.version] = pd
+                self._add_from_dict(pdata)
             except Exception:
                 logging.getLogger('smol.pack.metadata').exception("Unable to load pack data for %r", pdata)
 
@@ -92,14 +93,16 @@ class Service(abc.collections.Mapping):
 
     def __delitem__(self, key):
         if not isinstance(key, tuple) or key[1] is ...:
-        if ver is ...:
             raise KeyError("Cowardly refusing to do wildcard deletes")
         
         del self._data[key]
 
     async def update_all(self):
         # Checks all source URLs, updates/adds pack metadata
-        ...
+        with asyncio.ClientSession() as ses:
+            await asyncio.gather(
+                *(pd.check_for_updates(ses) for pd in self.values())
+            )
         # If there's any packs that are not available and not installed, remove them.
         for uriver, data in self.items():
             if not data.available and data.installpath is None:
@@ -116,6 +119,10 @@ class Service(abc.collections.Mapping):
         # Assume pack
         ...
         await self.save()
+
+    async def _add_from_dict(self, pdata):
+        pd = DATA_TYPES[pdata](**pdata)
+        self._data[pd.uri, pd.version] = pd
 
 
 # Schema: 
@@ -138,7 +145,8 @@ class AbstractPackData(abc.ABC):
     version = None
     latest = None
 
-    def __init__(self, **attrs):
+    def __init__(self, serv, **attrs):
+        self._serv = serv
         ...
 
     def yaml(self):
@@ -147,6 +155,11 @@ class AbstractPackData(abc.ABC):
     def getpack(self):
         # Build pack object based on platforms in use.
         ...
+
+    def _update_from_dict(self, data):
+        # FIXME: HORRIBLY insecure
+        vars(self._serv[uriver]).update(pack)
+
 
     @abc.abstractmethod
     async def getstream(self):
@@ -158,7 +171,29 @@ class AbstractPackData(abc.ABC):
 
 
 class ManifestPackData(AbstractPackData):
-    ...
+    async def getstream(self):
+        ...
+
+    _requests = {}
+
+    @staticmethod
+    async def _real_update(session, url):
+        async with session.get(url) as resp:
+            manifest = yaml.safe_load_all(await resp.text())
+
+        for pack in manifest:
+            uriver = pack['uri'], pack['version']
+            if uriver in self._serv:
+                self._serv[uriver]._update_from_dict(pack)
+            else:
+                self._serv._add_from_dict(pack)
+
+    async def check_for_updates(self, session):
+        mani = str(yurl.URL(self.source).replace(fragment=None))
+        if mani not in self._requests:
+            self._requests[mani] = asyncio.ensure_future(_real_update(session, mani))
+
+        await self._requests[mani]
 
 
 class UrlPackData(AbstractPackData):

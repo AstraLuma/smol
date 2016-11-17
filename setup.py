@@ -17,10 +17,16 @@ setup(
         'pyyaml',
         'aiohttp_jinja2',
         'aiofiles',
+        'YURL',
 
         # Bonuses to aiohttp
         'cchardet',
         'aiodns',
+        # TODO: Platform-specific requirements.
+        # Most of this is from https://github.com/r0x0r/pywebview/blob/master/setup.py
+        # Windows: pythonnet or pywin32 (via pypiwin32)
+        # Linux: PyGObject or PyQt4 (actually installable through pip)
+        # Mac: PyObjC or PyQt4
     ],
     entry_points={
         'gui_scripts': [

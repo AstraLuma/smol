@@ -86,7 +86,6 @@ class WebviewThread(threading.Thread):
         """
         # XXX: Is this cross-loop compatible? I suspect not.
         # XXX: Is this reentrant? How does webview handle that?
-        return await self._loop.call_soon_threadsafe(
-            self._loop.run_in_executor, 
+        return await asyncio.get_event_loop().run_in_executor(
             None, webview.create_file_dialog, dialog_type, directory, allow_multiple, save_filename
         )
