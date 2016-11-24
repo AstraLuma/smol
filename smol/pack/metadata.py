@@ -34,6 +34,14 @@ import aiofiles
 import yaml
 import yurl
 
+from .packs import build_platform
+
+
+class DownloadError(Exception):
+    """
+    Error downloading file
+    """
+
 
 class Service(collections.abc.Mapping):
     def __init__(self):
@@ -112,13 +120,35 @@ class Service(collections.abc.Mapping):
 
     async def add_from_URL(self, url):
         # Download, determine if this is a pack or manifest
-        ...
+        with asyncio.ClientSession() as ses:
+             async with session.get(url) as resp:
+                if resp.status != 200:
+                    raise DownloadError(resp)
+                buf = await resp.read()
+        try:
+            # Try as YAML: is manifest
+            for pdata in yaml.safe_load_all(buf):
+                try:
+                    self._add_from_dict(pdata)
+                except Exception:
+                    logging.getLogger('smol.pack.metadata').exception("Unable to load pack data for %r", pdata)
+        except Exception:
+            # Try as zip: is smolpack
+            await self._add_from_pack(buf)
+
         await self.save()
 
     async def add_from_file(self, path):
         # Assume pack
-        ...
+        async with aiofiles.open(path, 'rb') as pack:
+            buf = await pack.read()
+
+        await self._add_from_pack(buf)
+
         await self.save()
+
+    async def _add_from_pack(self, buf):
+        ...
 
     async def _add_from_dict(self, pdata):
         pd = DATA_TYPES[pdata](**pdata)
@@ -137,37 +167,51 @@ class Service(collections.abc.Mapping):
 
 
 class AbstractPackData(abc.ABC):
-    uri = None
-    directory = None
+    id = None
+    url = None
+    version = None
     platforms = []
+    name = None
+    description = None
+    extras = {}
+    directory = None
     _metadata = None
     source = None
-    version = None
     latest = None
 
     def __init__(self, serv, **attrs):
         self._serv = serv
-        ...
+        self.platforms = []
+        self.extras = {}
+        for k, v in attrs.items():
+            if hasattr(type(self), k):
+                setattr(self, k, v)
 
-    def yaml(self):
-        ...
-    
+    @classmethod
+    def from_item(cls, serv, item):
+        return cls(serv, **vars(item))
+
     def getpack(self):
         # Build pack object based on platforms in use.
-        ...
-
-    def _update_from_dict(self, data):
-        # FIXME: HORRIBLY insecure
-        vars(self._serv[uriver]).update(pack)
-
+        return build_platform(self.platforms.keys())(self, self.getstream)
 
     @abc.abstractmethod
     async def getstream(self):
-        pass
+        """
+        Returns an async iterable returning chunks of data.
+
+        This data is not guarenteed to be a particular size, by line, or anything.
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     async def check_for_updates(self):
-        pass
+        """
+        Calls out to wherever and sees if there's a new version of the pack.
+
+        If so, it'll be added to the metadata service.
+        """
+        raise NotImplementedError
 
 
 class ManifestPackData(AbstractPackData):
@@ -179,7 +223,9 @@ class ManifestPackData(AbstractPackData):
     @staticmethod
     async def _real_update(session, url):
         async with session.get(url) as resp:
-            manifest = yaml.safe_load_all(await resp.text())
+            if resp.status != 200:
+                raise DownloadError(resp)
+            manifest = yaml.safe_load_all(await resp.read())
 
         for pack in manifest:
             uriver = pack['uri'], pack['version']
@@ -198,6 +244,8 @@ class ManifestPackData(AbstractPackData):
 
 class UrlPackData(AbstractPackData):
     ...
+    # TODO: HTTP caching
+    # TODO: Update/version magic?
 
 
 class FilePackData(AbstractPackData):
