@@ -17,6 +17,14 @@ class Version(str):
             self._tuple = tuple(map(int, self.split('.')))
         return self._tuple
 
+    def __eq__(self, other):
+        if isinstance(other, str):
+            other = Version(other)
+        if isinstance(other, tuple):
+            return self.tuple == other
+        else:
+            return self.tuple == other.tuple
+
 
 
 def yaml_map_list(seq):

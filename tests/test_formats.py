@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 
-from smol.pack.formats import SmolPack
+from smol.pack.formats import SmolPack, Version
 
 
 @pytest.fixture(scope="session")
@@ -20,7 +20,7 @@ def test_metadata(pack_buffer):
     assert 'files' not in pack
 
 
-def test_metadata(pack_buffer):
+def test_metadata_version(pack_buffer):
     pack = SmolPack.from_buffer(pack_buffer)
     assert pack['version'].tuple == (1, 0)
 
@@ -35,3 +35,12 @@ async def test_bundled_file(pack_buffer):
 async def test_remote_file(pack_buffer):
     pack = SmolPack.from_buffer(pack_buffer)
     assert (await pack.read_string('spam')).strip() == 'eggs'
+
+
+def test_version_eq():
+    assert Version('1.0') == '1.0'
+    assert Version('1.0') == '1.00'
+    assert Version('1.0') == (1, 0)
+    assert Version('1.1') == Version('1.01')
+    assert Version('1.0') != Version('1.0.0')
+    assert Version('1.0') == Version('1.00')
