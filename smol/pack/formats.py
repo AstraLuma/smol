@@ -8,6 +8,24 @@ import collections.abc
 import aiohttp
 
 
+class Version(str):
+    __slots__ = '_tuple'
+
+    @property
+    def tuple(self):
+        if not hasattr(self, '_tuple'):
+            self._tuple = tuple(map(int, self.split('.')))
+        return self._tuple
+
+
+
+def yaml_map_list(seq):
+    """
+    Takes a YAML ordered map and yields a sequence of tuples
+    """
+    return [next(iter(i.items())) for i in seq]
+
+
 class SmolPack(collections.abc.Mapping):
     @classmethod
     def from_buffer(cls, data):
@@ -26,7 +44,7 @@ class SmolPack(collections.abc.Mapping):
         self._md['platforms'] = list(yaml_map_list(data.pop('platforms')))
         self._md.update(data)
         if 'version' in self._md:
-            self._md['version'] = str(self._md['version'])
+            self._md['version'] = Version(self._md['version'])
 
     def __getitem__(self, key):
         return self._md[key]
@@ -48,12 +66,6 @@ class SmolPack(collections.abc.Mapping):
     async def read_string(self, filename, encoding='utf-8'):
         return (await self.read_bytes(filename)).decode(encoding)
 
-
-def yaml_map_list(seq):
-    """
-    Takes a YAML ordered map and yields a sequence of tuples
-    """
-    return [next(iter(i.items())) for i in seq]
 
 class ManifestItem:
     @classmethod

@@ -20,6 +20,11 @@ def test_metadata(pack_buffer):
     assert 'files' not in pack
 
 
+def test_metadata(pack_buffer):
+    pack = SmolPack.from_buffer(pack_buffer)
+    assert pack['version'].tuple == (1, 0)
+
+
 @pytest.mark.asyncio
 async def test_bundled_file(pack_buffer):
     pack = SmolPack.from_buffer(pack_buffer)
