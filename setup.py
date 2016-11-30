@@ -17,6 +17,7 @@ setup(
         'pyyaml',
         'aiohttp_jinja2',
         'aiofiles',
+        'async_timeout',
         'YURL',
 
         # Bonuses to aiohttp
