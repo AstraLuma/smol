@@ -35,6 +35,8 @@ def yaml_map_list(seq):
 
 
 class SmolPack(collections.abc.Mapping):
+    METAFILE = 'smoldata.yaml'
+
     @classmethod
     def from_buffer(cls, data):
         zf = zipfile.ZipFile(io.BytesIO(data))
@@ -42,7 +44,7 @@ class SmolPack(collections.abc.Mapping):
 
     def __init__(self, zf):
         self._md = {}
-        with zf.open('smoldata.yaml') as sdy:
+        with zf.open(self.METAFILE) as sdy:
             self._init_metadata(sdy.read())
         self._zf = zf
 
@@ -62,6 +64,10 @@ class SmolPack(collections.abc.Mapping):
 
     def __len__(self):
         raise NotImplementedError
+
+    def files(self):
+        yield from [n for n in self._zf.namelist() if n != self.METAFILE]
+        yield from self._files.keys()
 
     async def read_bytes(self, filename):
         if filename in self._files:
