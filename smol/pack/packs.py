@@ -1,18 +1,23 @@
 """
 Classes to deal with packs on the system: installation, starting, etc
 """
-
+import pathlib
+import aiofiles
 
 class BasePack:
     """
     Has no knowledge of minecraft or forge.
     """
-    def __init__(self, metadata, stream):
-        self.metadata = metadata
-        self.getstream = stream
+    def __init__(self, base, loadfile):
+        self.base = pathlib.Path(base)
+        self.loadfile = loadfile
 
     async def install(self):
-        ...
+        sp = await self.loadfile()
+        for fn in sp.files():
+            buf = await sp.read_bytes(fn)
+            async with aiofiles.open(str(self.base / fn), mode='wb') as f:
+                await f.write(buf)
 
     async def run(self):
         raise NotImplementedError

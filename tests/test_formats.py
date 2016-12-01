@@ -1,6 +1,7 @@
 import pytest
 from smol.pack.formats import Version
 
+
 def test_metadata(smolpack):
     assert smolpack['id'] == 'testpack'
     assert smolpack['name'] == 'Test Pack'

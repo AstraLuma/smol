@@ -26,7 +26,6 @@ class Version(str):
             return self.tuple == other.tuple
 
 
-
 def yaml_map_list(seq):
     """
     Takes a YAML ordered map and yields a sequence of tuples
