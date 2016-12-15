@@ -1,16 +1,18 @@
 from aiohttp import web
 import aiohttp_jinja2
 import pkg_resources
-from .pyquery import PyQueryRoute, errors, route
+from .pyq import Socket, App, errors
 import pathlib
 import mimetypes
 
-@route.GET('/')
+app = App()
+
+@app.GET('/')
 @aiohttp_jinja2.template('index.html')
 async def index(request):
     return {}
 
-@route.GET('/static/{filename}')
+@app.GET('/static/{filename}')
 async def static(request):
     fn = request.match_info['filename']
     if '/' in fn:
@@ -25,8 +27,8 @@ async def static(request):
     body = stream.read()
     return web.Response(body=body, content_type=mimetypes.guess_type(fn)[0])
 
-@route.GET('/pyq')
-class SmolApp(PyQueryRoute):
+@app.GET('/pyq')
+class SmolApp(Socket):
     async def on_load(self):
         await self('a[href="#packs"]').tab('show')
         # TODO: Load packlist

@@ -2,12 +2,11 @@
 import asyncio
 import logging
 from aiohttp import web
-from .webview import WebviewThread
-from .pyquery import setup_routes
+from .pyq import WebviewThread
 import aiohttp_jinja2
 import jinja2
 
-import smol.app
+from .app import app as smol_app
 
 try:
     import uvloop
@@ -23,7 +22,7 @@ async def init(loop):
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('smol', 'templates'))
     # setup views and routes
-    setup_routes(smol.app, app)
+    smol_app.setup_routes(app)
 
     return app
 

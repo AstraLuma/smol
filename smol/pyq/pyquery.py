@@ -66,7 +66,7 @@ class PyQuery:
             return self.app._json2args(resp['value'])
         return methodproxy
 
-class PyQueryRoute:
+class Socket:
     def __init__(self):
         self.theline = queue.Queue()
 
@@ -139,30 +139,27 @@ class PyQueryRoute:
         # TODO: Map non-JSONable types
         return args
 
-class _RouteRegistry:
+class App:
     def __init__(self):
-        self._calls = {}
+        self._calls = []
 
     # See https://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.UrlDispatcher.add_route
     def _reg(self, method, path, **kwargs):
         modname = inspect.stack()[2].frame.f_globals['__name__']
-        calls = self._calls.setdefault(modname, [])
         def _(func):
             if hasattr(func, '__handle__'):
-                calls.append(
+                self._calls.append(
                     ((method, path, func.__handle__), kwargs)
                 )
             else:
-                calls.append(
+                self._calls.append(
                     ((method, path, func), kwargs)
                 )
             return func
         return _
 
-    def setup_routes(self, mod, app):
-        if hasattr(mod, '__name__'):
-            mod = mod.__name__
-        for pargs, kwargs in self._calls[mod]:
+    def setup_routes(self, app):
+        for pargs, kwargs in self._calls:
             app.router.add_route(*pargs, **kwargs)
 
     def __call__(self, path, **kwargs):
@@ -187,7 +184,3 @@ class _RouteRegistry:
 
     def OPTIONS(self, path, **kwargs):
         return self._reg('POST', path, **kwargs)
-
-
-route = _RouteRegistry()
-setup_routes = route.setup_routes
