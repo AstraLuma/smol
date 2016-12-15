@@ -94,12 +94,17 @@ class _Registry(colllections.abc.MutableMapping):
 
     def wrap(self, name):
         """
-        Wraps the normal factory with the decorated callable.
+        Wraps the normal factory with the decorated callable. Useful for 
+        additional application-specific configuration.
 
-        Useful for additional application-specific configuration.
+        Also supports types and functions, as long as they weren't registered
+        with a different name.
 
         NOTE: Must be called after the factory has been registered.
         """
+        if hasattr(name, '__name__'):
+            name = name.__name__
+
         def _(wrapper):
             oldfactory = self.factories[name]
             @functools.wraps(wrapper)
@@ -127,9 +132,15 @@ class inject:
         egg = inject('egg')
 
         async def mymethod(self):
-            (await self.egg).fry()
+            (await self.egg).crack()
     """
     def __init__(self, name):
+        """
+        Takes the name of the dependency.
+
+        Also supports types and functions, as long as they weren't registered
+        with a different name.
+        """
         if hasattr(name, '__name__'):
             name = name.__name__
         self.name = name
