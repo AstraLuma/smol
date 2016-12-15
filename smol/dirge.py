@@ -130,6 +130,8 @@ class inject:
             (await self.egg).fry()
     """
     def __init__(self, name):
+        if hasattr(name, '__name__'):
+            name = name.__name__
         self.name = name
 
     def __get__(self, obj, type=None):
