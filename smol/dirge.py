@@ -5,7 +5,7 @@ An async-oriented dependency injection registry.
 """
 import asyncio
 import inspect
-import colllections.abc
+import collections.abc
 import functools
 
 __all__ = 'AsyncInit', 'inject', 'registry'
@@ -21,7 +21,7 @@ class AsyncInit(type):
 
     async def __call__(cls, *pargs, **kwargs):
         self = super().__call__(*pargs, **kwargs)
-        if hasattr('__ainit__', cls):
+        if hasattr(cls, '__ainit__'):
             await cls.__ainit__(self, *pargs, **kwargs)
         return self
 
@@ -36,7 +36,7 @@ def mkfuture(val):
 
 
 
-class _Registry(colllections.abc.MutableMapping):
+class _Registry(collections.abc.MutableMapping):
     """
     Global registry of identifiers.
 
