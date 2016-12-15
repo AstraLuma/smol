@@ -24,7 +24,10 @@ async def test_factory():
     def spam():
         return "eggs"
 
+    assert len(reg) == 1
+
     aw = reg['spam']
+    assert len(reg) == 1
     assert inspect.isawaitable(aw)
     inst = await aw
     assert inst == 'eggs'
@@ -38,7 +41,10 @@ async def test_async_factory():
     async def spam():
         return "eggs"
 
+    assert len(reg) == 1
+
     aw = reg['spam']
+    assert len(reg) == 1
     assert inspect.isawaitable(aw)
     inst = await aw
     assert inst == 'eggs'
@@ -52,7 +58,10 @@ async def test_reg_type():
     class Spam:
         pass
 
+    assert len(reg) == 1
+
     aw = reg['Spam']
+    assert len(reg) == 1
     assert inspect.isawaitable(aw)
     inst = await aw
     assert isinstance(inst, Spam)
@@ -67,7 +76,10 @@ async def test_async_type():
         async def __ainit__(self):
             pass
 
+    assert len(reg) == 1
+
     aw = reg['Spam']
+    assert len(reg) == 1
     assert inspect.isawaitable(aw)
     inst = await aw
     assert isinstance(inst, Spam)
@@ -81,6 +93,84 @@ async def test_multi():
     class Spam:
         pass
 
+    assert len(reg) == 1
+
     thing1 = await reg['Spam']
     thing2 = await reg['Spam']
+    assert len(reg) == 1
     assert thing1 is thing2
+
+
+@pytest.mark.asyncio
+async def test_set():
+    reg = _Registry()
+
+    thing = object()
+
+    reg['spam'] = thing
+
+    assert len(reg) == 1
+
+    aw = reg['spam']
+    assert len(reg) == 1
+    assert inspect.isawaitable(aw)
+    inst = await aw
+    assert inst is thing
+
+@pytest.mark.asyncio
+async def test_del():
+    reg = _Registry()
+
+    @reg.register
+    class Spam:
+        pass
+
+    assert len(reg) == 1
+
+    thing1 = await reg['Spam']
+
+    assert len(reg) == 1
+    del reg['Spam']
+    assert len(reg) == 1
+
+    thing2 = await reg['Spam']
+    assert len(reg) == 1
+
+    assert thing1 is not thing2
+
+
+@pytest.mark.asyncio
+async def test_wrap():
+    reg = _Registry()
+
+    @reg.register
+    def spam():
+        return "spam"
+
+    @reg.wrap('spam')
+    def wrap(obj):
+        return obj+"eggs"
+
+    assert len(reg) == 1
+
+    inst = await reg['spam']
+    assert inst == 'spameggs'
+
+
+@pytest.mark.asyncio
+async def test_async_wrap():
+    reg = _Registry()
+
+    @reg.register
+    async def spam():
+        return "spam"
+
+    @reg.wrap('spam')
+    async def wrap(obj):
+        return obj+"eggs"
+
+    assert len(reg) == 1
+
+    inst = await reg['spam']
+    assert inst == 'spameggs'
+

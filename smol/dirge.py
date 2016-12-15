@@ -52,15 +52,15 @@ class _Registry(collections.abc.MutableMapping):
         return self._instances[key]
 
     def __setitem__(self, key, value):
-        if not isinstance(asyncio.Future):
+        if not isinstance(value, asyncio.Future):
             value = mkfuture(value)
         self._instances[key] = value
 
     def __len__(self):
-        return len(set(self.factories.keys()) + set(self._instances.keys()))
+        return len(set(self.factories.keys()) | set(self._instances.keys()))
 
     def __iter__(self):
-        yield from set(self.factories.keys()) + set(self._instances.keys())
+        yield from set(self.factories.keys()) | set(self._instances.keys())
 
     def __delitem__(self, key):
         """
@@ -109,7 +109,13 @@ class _Registry(collections.abc.MutableMapping):
             oldfactory = self.factories[name]
             @functools.wraps(wrapper)
             async def newfactory(*pargs, **kwargs):
-                return wrapper(await oldfactory(*pargs, **kwargs))
+                inst = oldfactory(*pargs, **kwargs)
+                if inspect.isawaitable(inst):
+                    inst = await inst
+                inst = wrapper(inst)
+                if inspect.isawaitable(inst):
+                    inst = await inst
+                return inst
             self.factories[name] = newfactory
 
             # XXX: This could lead to weird behavior?
