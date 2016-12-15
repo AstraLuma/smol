@@ -35,15 +35,14 @@ import yaml
 import yurl
 
 from .packs import build_platform
+from ..downloader import Downloader
+from ..dirge import inject, registry
 
 
-class DownloadError(Exception):
-    """
-    Error downloading file
-    """
-
-
+@registry.register("pack_metadata")
 class Service(collections.abc.Mapping):
+    dler = inject(Downloader)
+
     def __init__(self):
         self._data = {}
 
@@ -107,10 +106,9 @@ class Service(collections.abc.Mapping):
 
     async def update_all(self):
         # Checks all source URLs, updates/adds pack metadata
-        with asyncio.ClientSession() as ses:
-            await asyncio.gather(
-                *(pd.check_for_updates(ses) for pd in self.values())
-            )
+        await asyncio.gather(
+            *(pd.check_for_updates() for pd in self.values())
+        )
         # If there's any packs that are not available and not installed, remove them.
         for uriver, data in self.items():
             if not data.available and data.installpath is None:
@@ -120,11 +118,7 @@ class Service(collections.abc.Mapping):
 
     async def add_from_URL(self, url):
         # Download, determine if this is a pack or manifest
-        with asyncio.ClientSession() as ses:
-             async with session.get(url) as resp:
-                if resp.status != 200:
-                    raise DownloadError(resp)
-                buf = await resp.read()
+        buf = await (await self.dler).get(url)
         try:
             # Try as YAML: is manifest
             for pdata in yaml.safe_load_all(buf):
@@ -215,17 +209,17 @@ class AbstractPackData(abc.ABC):
 
 
 class ManifestPackData(AbstractPackData):
+    _dl = inject(Downloader)
+
     async def getstream(self):
         ...
 
     _requests = {}
 
     @staticmethod
-    async def _real_update(session, url):
-        async with session.get(url) as resp:
-            if resp.status != 200:
-                raise DownloadError(resp)
-            manifest = yaml.safe_load_all(await resp.read())
+    async def _real_update( url):
+        buf = await (await self._dl).get(url)
+        manifest = yaml.safe_load_all(buf)
 
         for pack in manifest:
             uriver = pack['uri'], pack['version']
@@ -234,10 +228,10 @@ class ManifestPackData(AbstractPackData):
             else:
                 self._serv._add_from_dict(pack)
 
-    async def check_for_updates(self, session):
+    async def check_for_updates(self):
         mani = str(yurl.URL(self.source).replace(fragment=None))
         if mani not in self._requests:
-            self._requests[mani] = asyncio.ensure_future(_real_update(session, mani))
+            self._requests[mani] = asyncio.ensure_future(_real_update(mani))
 
         await self._requests[mani]
 
