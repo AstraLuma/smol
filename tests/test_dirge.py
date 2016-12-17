@@ -174,3 +174,4 @@ async def test_async_wrap():
     inst = await reg['spam']
     assert inst == 'spameggs'
 
+# TODO: Test inject.

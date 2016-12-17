@@ -132,7 +132,7 @@ class inject:
     """
     Resolve an injection.
 
-    Note that this will retrun to a future--always await it.
+    Note that this will return to a future--always await it.
 
     class Spam:
         egg = inject('egg')

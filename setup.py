@@ -1,6 +1,7 @@
 from setuptools import find_packages, setup
 
 # TODO: Min. Python Version: 3.5
+# TODO: Proper package data finding
 setup(
     name='smol',
     version='0.0.1',
