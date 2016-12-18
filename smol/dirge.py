@@ -1,3 +1,5 @@
+# THIS FILE ONLY
+# Licensed under the GNU Lesser General Purpose License v3 <https://opensource.org/licenses/lgpl-3.0.html>
 """
 Anagram of direg--Dependency Injection REGistry
 
