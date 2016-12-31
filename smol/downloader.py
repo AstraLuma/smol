@@ -20,9 +20,14 @@ class DownloadError(Exception):
 class Downloader:
     session = inject('http_session')
 
+    CHUNK_SIZE = 4 * 1024
+
     async def get(self, url, **kwargs):
-        # FIXME: Is there a better way to do this?
         with (await self.session).get(url, **kwargs) as resp:
             if resp.status != 200:
                 raise DownloadError(resp)
-            return await resp.read()
+            yield await resp.read(self.CHUNK_SIZE)
+
+    async def to_aiofile(self, target, url, **kwargs):
+        async for chunk in self.get(url, **kwargs):
+            await target.write(chunk)

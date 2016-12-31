@@ -8,7 +8,9 @@ from aiohttp import web
 import json
 import queue
 
-__all__ = 'JSError', 'errors', 'PyQueryApp', 'route', 'setup_routes'
+
+__all__ = 'JSError', 'errors', 'App'
+
 
 class JSError(Exception):
     """
@@ -22,49 +24,36 @@ class _Errors:
 
 errors = _Errors()
 
-class QueryResults:
-    def __init__(self, future):
-        self.future = future
-        self.iter = None
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        if self.iter is None:
-            resp = await self.future
-            assert resp['type'] == 'results'
-            self.iter = iter(resp['list'])
-        try:
-            # TODO: Map elements, etc to objects
-            return next(self.iter)
-        except StopIteration:
-            raise StopAsyncIteration
-
 
 class PyQuery:
-    def __init__(self, query, app):
+    def __init__(self, query, socket):
         self.query = query
-        self.app = app
+        self.socket = socket
 
     def __aiter__(self):
-        return QueryResults(self.app._sendmessage({
-            'type': 'list',
-            'query': self.query,
-        }))
+        async def mkresults(self):
+            resp = await self.socket._sendmessage({
+                'type': 'list',
+                'query': self.query,
+            })
+            assert resp['type'] == 'results'
+            for i in resp['list']:
+                yield i
+        return mkresults()
 
     def __getattr__(self, name):
         async def methodproxy(*args):
-            resp = await self.app._sendmessage({
+            resp = await self.socket._sendmessage({
                 'type': 'call',
                 'query': self.query,
                 'method': name,
-                'args': self.app._args2json(args),
+                'args': self.socket._args2json(args),
             })
             assert resp['type'] == 'return'
             # TODO: Map elements, etc to objects
-            return self.app._json2args(resp['value'])
+            return self.socket._json2args(resp['value'])
         return methodproxy
+
 
 class Socket:
     def __init__(self):
@@ -138,6 +127,7 @@ class Socket:
     def _json2args(self, args):
         # TODO: Map non-JSONable types
         return args
+
 
 class App:
     def __init__(self):
