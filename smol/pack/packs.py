@@ -4,6 +4,7 @@ Classes to deal with packs on the system: installation, starting, etc
 import pathlib
 import aiofiles
 
+
 class BasePack:
     """
     Has no knowledge of minecraft or forge.

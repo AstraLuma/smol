@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-# TODO: Min. Python Version: 3.5
+# TODO: Min. Python Version: 3.6
 # TODO: Proper package data finding
 setup(
     name='smol',
@@ -15,11 +15,11 @@ setup(
     install_requires=[
         'pywebview',
         'aiohttp',
-        'pyyaml',
         'aiohttp_jinja2',
         'aiofiles',
         'async_timeout',
         'YURL',
+        'camel',
 
         # Bonuses to aiohttp
         'cchardet',

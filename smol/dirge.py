@@ -5,6 +5,7 @@ Anagram of direg--Dependency Injection REGistry
 
 An async-oriented dependency injection registry.
 """
+# NOTE: Do NOT use anything from smol.*
 import asyncio
 import inspect
 import collections.abc
@@ -35,7 +36,6 @@ def mkfuture(val):
         f = asyncio.get_event_loop().create_future()
         f.set_result(val)
         return f
-
 
 
 class _Registry(collections.abc.MutableMapping):
@@ -96,7 +96,7 @@ class _Registry(collections.abc.MutableMapping):
 
     def wrap(self, name):
         """
-        Wraps the normal factory with the decorated callable. Useful for 
+        Wraps the normal factory with the decorated callable. Useful for
         additional application-specific configuration.
 
         Also supports types and functions, as long as they weren't registered
@@ -109,6 +109,7 @@ class _Registry(collections.abc.MutableMapping):
 
         def _(wrapper):
             oldfactory = self.factories[name]
+
             @functools.wraps(wrapper)
             async def newfactory(*pargs, **kwargs):
                 inst = oldfactory(*pargs, **kwargs)

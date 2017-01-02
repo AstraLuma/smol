@@ -1,7 +1,6 @@
 """
 Exposes jQuery over websocket. Is generally pretty lazy and very async
 """
-import inspect
 import asyncio
 import aiohttp
 from aiohttp import web
@@ -17,10 +16,12 @@ class JSError(Exception):
     An error occurred in JavaScript
     """
 
+
 class _Errors:
     def __getattr__(self, name):
         vars(self)[name] = t = type(name, (JSError,), {})
         return t
+
 
 errors = _Errors()
 
@@ -84,8 +85,7 @@ class Socket:
             if msg.type == aiohttp.WSMsgType.TEXT:
                 self._recv(json.loads(msg.data))
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                print('ws connection closed with exception %s' %
-                      ws.exception())
+                print('ws connection closed with exception %s' % self.ws.exception())
 
         print('websocket connection closed')
 
@@ -96,7 +96,7 @@ class Socket:
         if obj['type'] == 'load':
             asyncio.ensure_future(self.on_load())
             # Don't actually care about the results.
-            # FIXME: At least log if there's an error 
+            # FIXME: At least log if there's an error
             return
         elif obj['type'] == 'callback':
             ...
@@ -135,7 +135,6 @@ class App:
 
     # See https://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.UrlDispatcher.add_route
     def _reg(self, method, path, **kwargs):
-        modname = inspect.stack()[2].frame.f_globals['__name__']
         def _(func):
             if hasattr(func, '__handle__'):
                 self._calls.append(

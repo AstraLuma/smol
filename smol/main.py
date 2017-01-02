@@ -15,6 +15,7 @@ except ImportError:
 else:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
+
 async def init(loop):
     # setup application and extensions
     app = web.Application(loop=loop, debug=True)
@@ -34,9 +35,11 @@ def main():
     loop = asyncio.get_event_loop()
     app = loop.run_until_complete(init(loop))
     wv = WebviewThread('SMoL', 'http://localhost:9753/')
+
     @wv.onclose
     def exit():
         loop.stop()
+
     loop.call_soon(wv.start)
     # We can make this timeout super low because we exit when our only client exits
     web.run_app(app, host='localhost', port=9753, shutdown_timeout=1)

@@ -1,16 +1,18 @@
 from aiohttp import web
 import aiohttp_jinja2
 import pkg_resources
-from .pyq import Socket, App, errors
+from .pyq import Socket, App
 import pathlib
 import mimetypes
 
 app = App()
 
+
 @app.GET('/')
 @aiohttp_jinja2.template('index.html')
 async def index(request):
     return {}
+
 
 @app.GET('/static/{filename}')
 async def static(request):
@@ -26,6 +28,7 @@ async def static(request):
     # TODO: streaming
     body = stream.read()
     return web.Response(body=body, content_type=mimetypes.guess_type(fn)[0])
+
 
 @app.GET('/pyq')
 class SmolApp(Socket):

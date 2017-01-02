@@ -6,6 +6,8 @@ import threading
 from webview import OPEN_DIALOG, FOLDER_DIALOG, SAVE_DIALOG
 import asyncio
 
+__all__ = 'WebviewThread', 'OPEN_DIALOG', 'FOLDER_DIALOG', 'SAVE_DIALOG'
+
 
 # FIXME: Multiple window support
 class WebviewThread(threading.Thread):
@@ -28,7 +30,7 @@ class WebviewThread(threading.Thread):
         :return:
         """
         super().__init__(name='webview', daemon=True)
-        self._args = {k:v for k,v in locals().items() if k not in {'self', 'loop'} and not k.startswith('_')}
+        self._args = {k: v for k, v in locals().items() if k not in {'self', 'loop'} and not k.startswith('_')}
         if loop is ...:
             loop = asyncio.get_event_loop()
         self._onclose = None
@@ -37,7 +39,7 @@ class WebviewThread(threading.Thread):
     def onclose(self, handler):
         """
         Register a function to be called when the window closes. May be used as a decorator.
-        
+
         Only one function is registered at a time. New registrations overwrite the old one.
 
         The registered function is called through `call_soon_threadsafe` of the loop when the object was instantiated.

@@ -4,6 +4,7 @@ Deals with downloading files nicely.
 import aiohttp
 from .dirge import registry, inject
 
+
 @registry.register
 def http_session():
     # FIXME: Clean this up some how?

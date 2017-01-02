@@ -13,7 +13,7 @@ The pack metadata service. Stores metadata and handles querying for updates.
 # multiple versions being available.
 #
 # Direct URL packs we have to use HTTP caching mechanisms (ETag, Last-Modified),
-# in order to detect updates. If we want old versions, we have to keep them on 
+# in order to detect updates. If we want old versions, we have to keep them on
 # disk.
 #
 # File packs are just hopeless. No features at all.
@@ -59,7 +59,6 @@ class Service(collections.abc.Mapping):
             except Exception:
                 logging.getLogger('smol.pack.metadata').exception("Unable to load pack data for %r", pdata)
 
-
     async def save(self, path=None):
         if path is None:
             path = self._path
@@ -101,7 +100,7 @@ class Service(collections.abc.Mapping):
     def __delitem__(self, key):
         if not isinstance(key, tuple) or key[1] is ...:
             raise KeyError("Cowardly refusing to do wildcard deletes")
-        
+
         del self._data[key]
 
     async def update_all(self):
@@ -112,7 +111,7 @@ class Service(collections.abc.Mapping):
         # If there's any packs that are not available and not installed, remove them.
         for uriver, data in self.items():
             if not data.available and data.installpath is None:
-                del self[univer]
+                del self[uriver]
 
         await self.save()
 
@@ -149,7 +148,7 @@ class Service(collections.abc.Mapping):
         self._data[pd.uri, pd.version] = pd
 
 
-# Schema: 
+# Schema:
 # Canonical fields: type, uri, version, source, installpath, available (is the source URL still valid?)
 # Cached (from pack): platforms, extras
 # Calculated: latest
@@ -214,24 +213,26 @@ class ManifestPackData(AbstractPackData):
     async def getstream(self):
         ...
 
+    # FIXME: Redo this to support multiple services and dirge
     _requests = {}
 
-    @staticmethod
-    async def _real_update( url):
-        buf = await (await self._dl).get(url)
-        manifest = yaml.safe_load_all(buf)
+    @classmethod
+    async def _real_update(cls, url):
+        pass
+        # buf = await (await self._dl).get(url)
+        # manifest = yaml.safe_load_all(buf)
 
-        for pack in manifest:
-            uriver = pack['uri'], pack['version']
-            if uriver in self._serv:
-                self._serv[uriver]._update_from_dict(pack)
-            else:
-                self._serv._add_from_dict(pack)
+        # for pack in manifest:
+        #     uriver = pack['uri'], pack['version']
+        #     if uriver in self._serv:
+        #         self._serv[uriver]._update_from_dict(pack)
+        #     else:
+        #         self._serv._add_from_dict(pack)
 
     async def check_for_updates(self):
         mani = str(yurl.URL(self.source).replace(fragment=None))
         if mani not in self._requests:
-            self._requests[mani] = asyncio.ensure_future(_real_update(mani))
+            self._requests[mani] = asyncio.ensure_future(self._real_update(mani))
 
         await self._requests[mani]
 

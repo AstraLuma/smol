@@ -117,6 +117,7 @@ async def test_set():
     inst = await aw
     assert inst is thing
 
+
 @pytest.mark.asyncio
 async def test_del():
     reg = _Registry()
@@ -149,7 +150,7 @@ async def test_wrap():
 
     @reg.wrap('spam')
     def wrap(obj):
-        return obj+"eggs"
+        return obj + "eggs"
 
     assert len(reg) == 1
 
@@ -167,7 +168,7 @@ async def test_async_wrap():
 
     @reg.wrap('spam')
     async def wrap(obj):
-        return obj+"eggs"
+        return obj + "eggs"
 
     assert len(reg) == 1
 
